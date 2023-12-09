@@ -53,9 +53,9 @@ typedef NS_OPTIONS(NSInteger, STKAudioPlayerState)
     STKAudioPlayerStatePlaying = (1 << 1) | STKAudioPlayerStateRunning,
     STKAudioPlayerStateBuffering = (1 << 2) | STKAudioPlayerStateRunning,
     STKAudioPlayerStatePaused = (1 << 3) | STKAudioPlayerStateRunning,
-    STKAudioPlayerStateStopped = (1 << 4),
-    STKAudioPlayerStateError = (1 << 5),
-    STKAudioPlayerStateDisposed = (1 << 6)
+    STKAudioPlayerStateStopped = (1 << 10),
+    STKAudioPlayerStateError = (1 << 20),
+    STKAudioPlayerStateDisposed = (1 << 30)
 };
 
 typedef NS_ENUM(NSInteger, STKAudioPlayerStopReason)
@@ -138,6 +138,9 @@ typedef void(^STKFrameFilter)(UInt32 channelsPerFrame, UInt32 bytesPerFrame, UIn
 /// Raised when datasource read stream metadata. Called from the non-main thread.
 -(void) audioPlayer:(STKAudioPlayer*)audioPlayer didReadStreamMetadata:(NSDictionary*)dictionary;
 
+/// Raised when audio player did update metering values
+-(void) audioPlayerDidUpdateMeeteringValues:(STKAudioPlayer*)audioPlayer;
+
 @end
 
 @interface STKAudioPlayer : NSObject<STKDataSourceDelegate>
@@ -175,6 +178,9 @@ typedef void(^STKFrameFilter)(UInt32 channelsPerFrame, UInt32 bytesPerFrame, UIn
 @property (readonly) STKAudioPlayerStopReason stopReason;
 /// Gets and sets the delegate used for receiving events from the STKAudioPlayer
 @property (readwrite, weak) id<STKAudioPlayerDelegate> delegate;
+/// Gets or sets the equalizer global gain
+@property (readwrite) Float32 equalizerGlobalGain;
+
 
 /// Creates a datasource from a given URL.
 /// URLs with FILE schemes will return an STKLocalFileDataSource.
@@ -278,6 +284,9 @@ typedef void(^STKFrameFilter)(UInt32 channelsPerFrame, UInt32 bytesPerFrame, UIn
 
 /// Sets the gain value (from -96 low to +24 high) for an equalizer band (0 based index)
 -(void) setGain:(float)gain forEqualizerBand:(int)bandIndex;
+
+/// Sets the band width value for an equalizer band (0 based index)
+-(void) setBandWidth:(float)value forEqualizerBand:(int)bandIndex;
 
 @end
 
