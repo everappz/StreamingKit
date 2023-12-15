@@ -2501,7 +2501,13 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
         return;
     }
     
-    status = AUGraphStop(audioGraph);
+#if (TARGET_OS_MACCATALYST)
+    //do not stop audio graph on mac catalyst when we reached end of file to fix deadlock
+    if (stopReasonIn != STKAudioPlayerStopReasonEof)
+#endif
+    {
+        status = AUGraphStop(audioGraph);
+    }
     
     if (status)
     {
