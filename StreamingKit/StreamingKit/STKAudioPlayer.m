@@ -708,13 +708,13 @@ static void AudioFileStreamPacketsProc(void* clientData,
     if (audioFileStream)
     {
         AudioFileStreamClose(audioFileStream);
-        audioFileStream = nil;
+        audioFileStream = NULL;
     }
     
     if (audioConverterRef)
     {
         AudioConverterDispose(audioConverterRef);
-        audioConverterRef = nil;
+        audioConverterRef = NULL;
     }
     
     if (audioGraph)
@@ -723,7 +723,7 @@ static void AudioFileStreamPacketsProc(void* clientData,
         AUGraphClose(audioGraph);
         DisposeAUGraph(audioGraph);
         
-        audioGraph = nil;
+        audioGraph = NULL;
     }
 }
 
@@ -1809,7 +1809,7 @@ static void AudioFileStreamPacketsProc(void* clientData,
                 [self resetPcmBuffers];
             }
             
-            if (audioGraph != nil)
+            if (audioGraph)
             {
                 error = AUGraphStart(audioGraph);
                 
@@ -2374,11 +2374,13 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
     NSMutableArray* nodes = [[NSMutableArray alloc] init];
     NSMutableArray* units = [[NSMutableArray alloc] init];
     
-    AUGraphClearConnections(audioGraph);
-    
-    for (NSNumber* converterNode in converterNodes)
-    {
-        CHECK_STATUS_AND_REPORT(AUGraphRemoveNode(audioGraph, (AUNode)converterNode.intValue));
+    if (audioGraph) {
+        AUGraphClearConnections(audioGraph);
+        
+        for (NSNumber* converterNode in converterNodes)
+        {
+            CHECK_STATUS_AND_REPORT(AUGraphRemoveNode(audioGraph, (AUNode)converterNode.intValue));
+        }
     }
     
     [converterNodes removeAllObjects];
@@ -2435,10 +2437,12 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
 
 -(BOOL) audioGraphIsRunning
 {
-    OSStatus status;
-    Boolean isRunning;
+    OSStatus status = kAudioUnitErr_InvalidParameter;
+    Boolean isRunning = NO;
     
-    status = AUGraphIsRunning(audioGraph, &isRunning);
+    if (audioGraph) {
+        status = AUGraphIsRunning(audioGraph, &isRunning);
+    }
     
     if (status)
     {
@@ -2450,7 +2454,7 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
 
 -(BOOL) startAudioGraph
 {
-    OSStatus status;
+    OSStatus status = kAudioUnitErr_InvalidParameter;
     
     [self resetPcmBuffers];
     
@@ -2459,7 +2463,9 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
         return NO;
     }
     
-    status = AUGraphStart(audioGraph);
+    if (audioGraph) {
+        status = AUGraphStart(audioGraph);
+    }
     
     if (status)
     {
@@ -2475,9 +2481,9 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
 
 -(void) stopAudioUnitWithReason:(STKAudioPlayerStopReason)stopReasonIn
 {
-    OSStatus status;
+    OSStatus status = kAudioUnitErr_InvalidParameter;
     
-    if (!audioGraph)
+    if (audioGraph == NULL)
     {
         stopReason = stopReasonIn;
         self.internalState = STKAudioPlayerInternalStateStopped;
@@ -2501,10 +2507,10 @@ static BOOL GetHardwareCodecClassDesc(UInt32 formatId, AudioClassDescription* cl
         return;
     }
     
-#if (TARGET_OS_MACCATALYST)
-    //do not stop audio graph on mac catalyst when we reached end of file to fix deadlock
+    //do not stop audio graph when we reached end of file
+    //on MAC_CATALYST to fix deadlock
+    //on iOS to fix crash in AudioUnitGraph::Stop()
     if (stopReasonIn != STKAudioPlayerStopReasonEof)
-#endif
     {
         status = AUGraphStop(audioGraph);
     }
@@ -3238,11 +3244,13 @@ static OSStatus OutputRenderCallback(void* inRefCon,
     
     if (audioPlayer->equalizerEnabled != audioPlayer->equalizerOn)
     {
-        Boolean isUpdated;
+        Boolean isUpdated = NO;
         
         [audioPlayer connectGraph];
         
-        AUGraphUpdate(audioPlayer->audioGraph, &isUpdated);
+        if (audioPlayer->audioGraph != NULL) {
+            AUGraphUpdate(audioPlayer->audioGraph, &isUpdated);
+        }
         
         isUpdated = isUpdated;
     }
