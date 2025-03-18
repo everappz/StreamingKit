@@ -119,51 +119,90 @@
     return self->currentUrl;
 }
 
-+(AudioFileTypeID) audioFileTypeHintFromMimeType:(NSString*)mimeType
++ (AudioFileTypeID)audioFileTypeHintFromMimeType:(NSString *)mimeType
 {
     static dispatch_once_t onceToken;
-    static NSDictionary* fileTypesByMimeType;
+    static NSDictionary<NSString *, NSNumber *> *fileTypesByMimeType;
     
-    dispatch_once(&onceToken, ^
-    {
-        fileTypesByMimeType =
-        @{
+    dispatch_once(&onceToken, ^{
+        fileTypesByMimeType = @{
+            // MP3
             @"audio/mp3": @(kAudioFileMP3Type),
-            @"audio/mpg": @(kAudioFileMP3Type),
             @"audio/mpeg": @(kAudioFileMP3Type),
+            @"audio/mpg": @(kAudioFileMP3Type),
+
+            // MP2 / MP1
+            @"audio/mp2": @(kAudioFileMP2Type),
+            @"audio/mp1": @(kAudioFileMP1Type),
+
+            // WAV
             @"audio/wav": @(kAudioFileWAVEType),
             @"audio/x-wav": @(kAudioFileWAVEType),
             @"audio/vnd.wav": @(kAudioFileWAVEType),
-            @"audio/aifc": @(kAudioFileAIFCType),
+
+            // AIFF / AIFC
             @"audio/aiff": @(kAudioFileAIFFType),
-            @"audio/x-m4a": @(kAudioFileM4AType),
-            @"audio/x-mp4": @(kAudioFileMPEG4Type),
-            @"audio/aacp": @(kAudioFileAAC_ADTSType),
-            @"audio/m4a": @(kAudioFileM4AType),
-            @"audio/mp4": @(kAudioFileMPEG4Type),
-            @"video/mp4": @(kAudioFileMPEG4Type),
-            @"audio/caf": @(kAudioFileCAFType),
-            @"audio/x-caf": @(kAudioFileCAFType),
+            @"audio/x-aiff": @(kAudioFileAIFFType),
+            @"audio/aif": @(kAudioFileAIFFType),
+            @"audio/aifc": @(kAudioFileAIFCType),
+
+            // AAC / ADTS
             @"audio/aac": @(kAudioFileAAC_ADTSType),
             @"audio/aacp": @(kAudioFileAAC_ADTSType),
+            @"audio/adts": @(kAudioFileAAC_ADTSType),
+
+            // AC3
             @"audio/ac3": @(kAudioFileAC3Type),
+            @"audio/x-ac3": @(kAudioFileAC3Type),
+
+            // MP4 / M4A / M4B
+            @"audio/mp4": @(kAudioFileMPEG4Type),
+            @"video/mp4": @(kAudioFileMPEG4Type),
+            @"audio/x-mp4": @(kAudioFileMPEG4Type),
+            @"audio/m4a": @(kAudioFileM4AType),
+            @"audio/x-m4a": @(kAudioFileM4AType),
+            @"audio/m4b": @(kAudioFileM4BType),
+
+            // CAF
+            @"audio/caf": @(kAudioFileCAFType),
+            @"audio/x-caf": @(kAudioFileCAFType),
+
+            // 3GP / 3GPP / 3G2
             @"audio/3gp": @(kAudioFile3GPType),
             @"video/3gp": @(kAudioFile3GPType),
             @"audio/3gpp": @(kAudioFile3GPType),
             @"video/3gpp": @(kAudioFile3GPType),
             @"audio/3gp2": @(kAudioFile3GP2Type),
-            @"video/3gp2": @(kAudioFile3GP2Type)
+            @"video/3gp2": @(kAudioFile3GP2Type),
+
+            // AMR
+            @"audio/amr": @(kAudioFileAMRType),
+            @"audio/amr-wb": @(kAudioFileAMRType),
+
+            // FLAC
+            @"audio/flac": @(kAudioFileFLACType),
+
+            // LOAS (LATM)
+            @"audio/loas": @(kAudioFileLATMInLOASType),
+            @"audio/x-latm": @(kAudioFileLATMInLOASType),
+
+            // Sound Designer II
+            @"audio/sd2": @(kAudioFileSoundDesigner2Type),
+
+            // NeXT/SND
+            @"audio/basic": @(kAudioFileNextType),
+            @"audio/x-next": @(kAudioFileNextType),
+
+            // RF64 / BW64 / W64
+            @"audio/rf64": @(kAudioFileRF64Type),
+            @"audio/bw64": @(kAudioFileBW64Type),
+            @"audio/w64": @(kAudioFileWave64Type)
         };
     });
-    
-    NSNumber* number = [fileTypesByMimeType objectForKey:mimeType];
-    
-    if (!number)
-    {
-        return 0;
-    }
-    
-    return (AudioFileTypeID)number.intValue;
+
+    NSString *lowerMime = mimeType.lowercaseString;
+    NSNumber *number = fileTypesByMimeType[lowerMime];
+    return number ? (AudioFileTypeID)number.unsignedIntValue : 0;
 }
 
 -(AudioFileTypeID) audioFileTypeHint

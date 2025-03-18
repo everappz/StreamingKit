@@ -59,36 +59,46 @@
     return self;
 }
 
-+(AudioFileTypeID) audioFileTypeHintFromFileExtension:(NSString*)fileExtension
++ (AudioFileTypeID)audioFileTypeHintFromFileExtension:(NSString *)fileExtension
 {
     static dispatch_once_t onceToken;
-    static NSDictionary* fileTypesByFileExtensions;
+    static NSDictionary<NSString *, NSNumber *> *fileTypesByFileExtensions;
     
-    dispatch_once(&onceToken, ^
-    {
-        fileTypesByFileExtensions =
-        @{
+    dispatch_once(&onceToken, ^{
+        fileTypesByFileExtensions = @{
             @"mp3": @(kAudioFileMP3Type),
+            @"mp2": @(kAudioFileMP2Type),
+            @"mp1": @(kAudioFileMP1Type),
             @"wav": @(kAudioFileWAVEType),
-            @"aifc": @(kAudioFileAIFCType),
+            @"wave": @(kAudioFileWAVEType),
+            @"aif": @(kAudioFileAIFFType),
             @"aiff": @(kAudioFileAIFFType),
-            @"m4a": @(kAudioFileM4AType),
-            @"mp4": @(kAudioFileMPEG4Type),
-            @"caf": @(kAudioFileCAFType),
+            @"aifc": @(kAudioFileAIFCType),
+            @"rf64": @(kAudioFileRF64Type),
+            @"bw64": @(kAudioFileBW64Type),
+            @"w64": @(kAudioFileWave64Type),
+            @"sd2": @(kAudioFileSoundDesigner2Type),
+            @"snd": @(kAudioFileNextType),
             @"aac": @(kAudioFileAAC_ADTSType),
             @"ac3": @(kAudioFileAC3Type),
-            @"3gp": @(kAudioFile3GPType)
+            @"adts": @(kAudioFileAAC_ADTSType),
+            @"mp4": @(kAudioFileMPEG4Type),
+            @"m4a": @(kAudioFileM4AType),
+            @"m4b": @(kAudioFileM4BType),
+            @"caf": @(kAudioFileCAFType),
+            @"3gp": @(kAudioFile3GPType),
+            @"3gpp": @(kAudioFile3GPType),
+            @"3g2": @(kAudioFile3GP2Type),
+            @"3gp2": @(kAudioFile3GP2Type),
+            @"amr": @(kAudioFileAMRType),
+            @"flac": @(kAudioFileFLACType),
+            @"loas": @(kAudioFileLATMInLOASType)
         };
     });
-    
-    NSNumber* number = [fileTypesByFileExtensions objectForKey:fileExtension];
-    
-    if (!number)
-    {
-        return 0;
-    }
-    
-    return (AudioFileTypeID)number.intValue;
+
+    NSString *lowerExt = fileExtension.lowercaseString;
+    NSNumber *number = fileTypesByFileExtensions[lowerExt];
+    return number ? (AudioFileTypeID)number.unsignedIntValue : 0;
 }
 
 -(AudioFileTypeID) audioFileTypeHint
